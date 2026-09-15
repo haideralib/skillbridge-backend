@@ -8,6 +8,7 @@ import { AppError } from "../utils/App.util";
 import type { IBaseResponse } from "../interfaces/base.interface";
 import type { Pagination } from "../interfaces/pagination.interface";
 import type { IJob } from "../interfaces/job.interface";
+import Application from "../models/application.model";
 
 export const uploadJob = asyncHandler(async (req: Request, res: Response) => {
     const result = CreateJobValidation.safeParse(req.body);
@@ -131,6 +132,28 @@ export const searchJobs = asyncHandler(async (req: Request, res: Response) => {
     status: StatusCodes.OK,
     message: "Jobs retrieved successfully",
     data: pagination,
+  };
+
+  res.status(StatusCodes.OK).json(response);
+});
+
+export const getEmployerJobs = asyncHandler(async (req: Request, res: Response) => {
+  const userId = req.user?.id;
+  if (!userId) throw new AppError("Unauthorized", StatusCodes.UNAUTHORIZED);
+
+  const employer = await Employer.findOne({ user: userId }).select("_id");
+  if (!employer) throw new AppError("Employer profile not found", StatusCodes.NOT_FOUND);
+
+  const jobs = await Job.find({ employer: employer._id }).sort({ createdAt: -1 });
+  const jobsWithApplicationCounts = await Promise.all(jobs.map(async (job) => ({
+    ...(job.toObject() as unknown as IJob),
+    applicationsCount: await Application.countDocuments({ job: job._id }),
+  })));
+
+  const response: IBaseResponse<IJob[]> = {
+    status: StatusCodes.OK,
+    message: "Employer jobs retrieved successfully",
+    data: jobsWithApplicationCounts,
   };
 
   res.status(StatusCodes.OK).json(response);

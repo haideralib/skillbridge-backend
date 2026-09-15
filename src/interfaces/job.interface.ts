@@ -38,4 +38,5 @@ export interface IJob {
     status: "draft" | "active" | "closed";
     createdAt: string | Date;
     updatedAt: string | Date;
+    applicationsCount?: number;
 }

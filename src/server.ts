@@ -5,6 +5,7 @@ import authRoutes from './routes/auth.route';
 import morgan from 'morgan';
 import { AuthMiddleware } from './middlewares/auth.middleware';
 import cors from 'cors';
+import candidateRoutes from './routes/condidate.route';
 import dotenv from 'dotenv';
 import jobRoutes from './routes/job.route';
 dotenv.config();
@@ -27,7 +28,7 @@ app.use(cors({
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/jobs", jobRoutes);
-
+app.use("/api/candidate", candidateRoutes);
 
 // middleware
 app.use(AuthMiddleware);
